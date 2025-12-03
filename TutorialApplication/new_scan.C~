@@ -1,0 +1,44 @@
+void new_scan()
+{
+  app->InitMC("geometry/cubox");
+  app->SetPrimaryPDG(-13);
+  TGraph *gLoss = new TGraph();
+  TH1F* hloss = new TH1F("hloss","; -dE [MeV]",100,0,10);
+  TGraph* gdEdx =  new TGraph();
+  gLoss->SetTitle("Energy Loss vs ;beta_gamma; MeV/ (g.cm^2)");
+  gloss->SetLogy(1);
+  gLoss->SetMarkerStyle(20);
+  gLoss->SetMarkerColor(kBlue);
+  gLoss->SetLineWidth(2);
+  gLoss->SetLineColor(kBlue);
+  int n_steps = 10;
+  const Int_t nev = 100;
+  double p_min = 0.1;
+  double p_max = 20.0;
+  const Double_t mass = 0.1057;
+  const Double_t density = 8.960;
+  const Double_t length = 0.2;
+  double step_size = (p_max - p_min) / (n_steps - 1);
+  for (int i =0; i<n_steps; i++){
+    double current_p = p_min + (i * step_size);
+    app->SetPrimaryMomentum(current_p);
+    hloss->Reset();
+    for (int j=0; j<nev; j++){
+      app->RunMC(1, !j);
+      double loss = app->depEinNode("/EXPH_1/CALB_1");
+      loss *= 1000;
+      loss = loss / density /length; 
+      hloss->Fill(loss);
+    }
+    //gdEdx->SetPoint(gdEdx->GetN(),current_p/mass);
+    double mean_loss = hloss->GetMean() / density /length;
+    gLoss->SetPoint(i, current_p, mean_loss);
+    }
+  TCanvas *c1 = new TCanvas("c1", "Momentum Scan", 800, 600);
+  c1->SetGrid(); 
+  gLoss->Draw("ALP");
+  c1->Update();
+
+}
+
+
