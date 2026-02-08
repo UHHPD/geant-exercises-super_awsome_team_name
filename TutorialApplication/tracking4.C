@@ -12,7 +12,7 @@
 #include "TMinuit.h"
 #include "TList.h"
 #include "TPad.h"
-
+#include "TGraph.h"
 #include <cassert>
 
 typedef TMatrixTSym<double>	TMatrixDSym;
@@ -25,6 +25,8 @@ TH1F *hresid2 = new TH1F("hresid2","resid2; z_{hit}-z_{true} [cm]; events",100,-
 TH1F *hresid3 = new TH1F("hresid3","resid3; z_{hit}-z_{true} [cm]; events",100,-0.1,0.1);
 TH1F *hpt = new TH1F("hpt","; p_{T} [GeV]",100,0,10);
 TH1F *hptpull = new TH1F("hptpull","; (p_{T}^{meas} - p_{T}^{true})/#sigma",100,-10,10);
+TGraph *res = new TGraph();
+
 
 class Cluster : public TVector3 {
 public:
@@ -387,8 +389,18 @@ void removeAllHelices(TVirtualPad* pad) {
 }
 
 
-void tracking2()
+void tracking4()
 {
+  res->SetTitle("Magnetic Field vs Resolution");
+  res->SetMarkerStyle(20);
+  res->SetMarkerColor(kBlue);
+  res->SetLineWidth(2);
+  res->SetLineColor(kBlue);
+  
+
+  bool doFit = true;
+  double magnetic_field_values[] = {1, 10};
+  for(unsigned int ii =0 ;ii<2; ii++){
   TutorialApplication* app = (TutorialApplication*)TutorialApplication::Instance();
   // position of silicon layers in x   
   double pos1 = -45.0;
@@ -396,7 +408,7 @@ void tracking2()
   double pos3 = 45.0; 
   double pitch = 0.0150;
   double materialLength = 0.05;//length of support structures
-  double Bfield = 2.0;//magnetic field in T
+  double Bfield = magnetic_field_values[ii];
   TString geom("geometry/tracker2(");
   geom+=pos1; geom.Append(",");
   geom+=pos2; geom.Append(",");
@@ -406,10 +418,9 @@ void tracking2()
   geom+=Bfield; geom.Append(")"); 
   app->InitMC(geom); 
 
-  bool doFit = true;
-
+  
   // define particle and control parameters of loop   
-  unsigned int nevt = 200;
+  unsigned int nevt = 1;
   double p = 5.0;
   app->SetPrimaryPDG(-13);    // +/-11: PDG code of e+/- 
   /* other PDG codes     22: Photon    +-13: muon   
@@ -452,6 +463,14 @@ void tracking2()
       }
     }
   }
+  res->SetPoint(ii,Bfield, hpt->GetRMS());
+  }
+  TCanvas *c3 = new TCanvas("c3", "just print", 800, 600);
+  c3->SetGrid();
+  //c1->Setlogx();
+  res->Draw("ALP");
+  c3->Update();
+
   TCanvas* c = new TCanvas("c");
   c->Divide(3,2);
   c->cd(1);

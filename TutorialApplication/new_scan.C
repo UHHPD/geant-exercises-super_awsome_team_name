@@ -33,7 +33,7 @@ void new_scan()
     //gdEdx->SetPoint(gdEdx->GetN(),current_p/mass);
     double mean_loss = hloss->GetMean() / density /length;
     gLoss->SetPoint(i, current_p, mean_loss);
-    }
+  }
   TCanvas *c1 = new TCanvas("c1", "Momentum Scan", 800, 600);
   c1->SetGrid();
   //c1->Setlogx();

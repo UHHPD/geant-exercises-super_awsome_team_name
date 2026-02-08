@@ -12,7 +12,7 @@
 #include "TMinuit.h"
 #include "TList.h"
 #include "TPad.h"
-
+#include "TGraph.h"
 #include <cassert>
 
 typedef TMatrixTSym<double>	TMatrixDSym;
@@ -25,6 +25,8 @@ TH1F *hresid2 = new TH1F("hresid2","resid2; z_{hit}-z_{true} [cm]; events",100,-
 TH1F *hresid3 = new TH1F("hresid3","resid3; z_{hit}-z_{true} [cm]; events",100,-0.1,0.1);
 TH1F *hpt = new TH1F("hpt","; p_{T} [GeV]",100,0,10);
 TH1F *hptpull = new TH1F("hptpull","; (p_{T}^{meas} - p_{T}^{true})/#sigma",100,-10,10);
+TGraph *res = new TGraph();
+
 
 class Cluster : public TVector3 {
 public:
@@ -387,8 +389,14 @@ void removeAllHelices(TVirtualPad* pad) {
 }
 
 
-void tracking2()
+void tracking3()
 {
+  res->SetTitle("momentum vs resolution");
+  res->SetMarkerStyle(20);
+  res->SetMarkerColor(kBlue);
+  res->SetLineWidth(2);
+  res->SetLineColor(kBlue);
+
   TutorialApplication* app = (TutorialApplication*)TutorialApplication::Instance();
   // position of silicon layers in x   
   double pos1 = -45.0;
@@ -405,12 +413,14 @@ void tracking2()
   geom+=materialLength; geom.Append(",");
   geom+=Bfield; geom.Append(")"); 
   app->InitMC(geom); 
-
   bool doFit = true;
+  
+  double energy_values[] = {1, 10, 25, 50};
 
+  for(unsigned int ii =0 ;ii<4; ii++){
   // define particle and control parameters of loop   
   unsigned int nevt = 200;
-  double p = 5.0;
+  double p = energy_values[ii];
   app->SetPrimaryPDG(-13);    // +/-11: PDG code of e+/- 
   /* other PDG codes     22: Photon    +-13: muon   
                      +/-211: pion   +/-2212: proton     */
@@ -452,6 +462,14 @@ void tracking2()
       }
     }
   }
+  res->SetPoint(ii,p, hpt->GetRMS());
+  }
+  TCanvas *c3 = new TCanvas("c3", "just print", 800, 600);
+  c3->SetGrid();
+  //c1->Setlogx();
+  res->Draw("ALP");
+  c3->Update();
+
   TCanvas* c = new TCanvas("c");
   c->Divide(3,2);
   c->cd(1);
