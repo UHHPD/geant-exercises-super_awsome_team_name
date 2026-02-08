@@ -409,7 +409,7 @@ void tracking2()
   bool doFit = true;
 
   // define particle and control parameters of loop   
-  unsigned int nevt = 200;
+  unsigned int nevt = 500;
   double p = 5.0;
   app->SetPrimaryPDG(-13);    // +/-11: PDG code of e+/- 
   /* other PDG codes     22: Photon    +-13: muon   
